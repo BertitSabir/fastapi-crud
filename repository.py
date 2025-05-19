@@ -28,18 +28,14 @@ def list_heroes(
     return heroes
 
 
-def get_hero(hero_id: int, session:Session) -> HeroBase:
+def get_hero(hero_id: int, session: Session) -> HeroBase:
     hero = session.get(Hero, hero_id)
     if not hero:
         raise HeroNotFoundError(message=f"Hero with id {hero_id} not found")
     return hero
 
 
-def update_hero(
-    hero_id: int,
-    hero: HeroBase,
-    session: Session
-) -> HeroBase:
+def update_hero(hero_id: int, hero: HeroBase, session: Session) -> HeroBase:
     hero_db = get_hero(hero_id, session)
     # get only the hero data that was set in the request
     hero_data = hero.model_dump(exclude_unset=True)
@@ -57,4 +53,3 @@ def delete_hero(hero_id: int, session: Session) -> dict:
     session.delete(hero_db)
     session.commit()
     return {"ok": True}
-

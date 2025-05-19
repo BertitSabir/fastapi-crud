@@ -11,7 +11,6 @@ HeroCreate ->   data model: name, age, secret_name
 HeroUpdate ->   data_model: name, age, secret_name
 """
 
-
 from sqlmodel import SQLModel, Field
 
 

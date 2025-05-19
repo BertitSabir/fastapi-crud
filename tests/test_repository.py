@@ -2,12 +2,22 @@ import pytest
 from sqlmodel import SQLModel, Session, create_engine
 from models import Hero
 
-from repository import list_heroes, get_hero, create_hero, update_hero, delete_hero, HeroNotFoundError
+from repository import (
+    list_heroes,
+    get_hero,
+    create_hero,
+    update_hero,
+    delete_hero,
+    HeroNotFoundError,
+)
+
 
 @pytest.fixture(name="session")
 def session_fixture():
     # Create an in-memory SQLite database
-    engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
+    engine = create_engine(
+        "sqlite:///:memory:", connect_args={"check_same_thread": False}
+    )
     SQLModel.metadata.create_all(engine)
     with Session(engine) as session:
         # Initialize the database with some test data
@@ -40,7 +50,6 @@ def test_create(session):
 
 
 def test_list(session):
-    
     # Arrange
     # Act
     heroes = list_heroes(session=session, offset=0, limit=100)
@@ -79,14 +88,10 @@ def test_update_hero(session):
     original_hero = get_hero(hero_id=1, session=session)
     updated_hero = Hero(name="Spiderman 3", age=31)
 
-
     # Act
     updated_hero = update_hero(
-        hero_id=original_hero.id, 
-        hero=updated_hero, 
-        session=session
+        hero_id=original_hero.id, hero=updated_hero, session=session
     )
-
 
     # Assert
     assert updated_hero.id == original_hero.id
@@ -103,7 +108,7 @@ def test_delete_hero(session):
 
     # Assert
     assert result == {"ok": True}
-    
+
     # Verify the hero is deleted
     with pytest.raises(HeroNotFoundError, match=f"Hero with id {hero_id} not found"):
         get_hero(hero_id=hero_id, session=session)
