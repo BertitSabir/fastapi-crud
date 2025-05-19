@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Query, HTTPException, status
 from typing import Annotated
 from sqlmodel import select
+from repository import create_hero, list_heroes, get_hero, update_hero as update_repo, delete_hero as delete_repo, HeroNotFoundError
 
 from db import lifespan
 from dependencies import SessionDep
@@ -16,11 +17,7 @@ app = FastAPI(lifespan=lifespan)  # noqa
     response_model=HeroPublic
 )
 async def create_heros(hero: HeroCreate, session: SessionDep):
-    db_hero = Hero.model_validate(hero)
-    session.add(db_hero)
-    session.commit()
-    session.refresh(db_hero)
-    return db_hero
+    return create_hero(hero=hero, session=session)
 
 
 @app.get(
@@ -32,9 +29,11 @@ async def read_heroes(
     offset: Annotated[int, Query(ge=0)] = 0,
     limit: Annotated[int, Query(le=100)] = 100,
 ):
-    statement = select(Hero).offset(offset).limit(limit)
-    heroes = session.exec(statement=statement).all()
-    return heroes
+    return list_heroes(
+        session=session,
+        offset=offset,
+        limit=limit
+    )
 
 
 @app.get(
@@ -45,12 +44,13 @@ async def read_hero(
     hero_id: int,
     session: SessionDep,
 ):
-    hero = session.get(Hero, hero_id)
-    if not hero:
+    try:
+        return get_hero(hero_id=hero_id, session=session)
+    except HeroNotFoundError as e:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Hero not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail=e.message
         )
-    return hero
+
 
 
 @app.patch(
@@ -62,26 +62,23 @@ async def update_hero(
     hero: HeroUpdate,
     session: SessionDep
 ):
-    hero_db = session.get(Hero, hero_id)
-    if not hero_db:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Hero not Found"
+    try:
+        return update_repo(
+            hero_id=hero_id,
+            hero=hero,
+            session=session
         )
-    hero_data = hero.model_dump(exclude_unset=True)
-    hero_db.sqlmodel_update(hero_data)
-    session.add(hero_db)
-    session.commit()
-    session.refresh(hero_db)
-    return hero_db
+    except HeroNotFoundError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=e.message
+        )
 
 
 @app.delete("/heroes/{hero_id}")
 async def delete_hero(hero_id: int, session: SessionDep) -> dict:
-    hero = session.get(Hero, hero_id)
-    if not hero:
+    try:
+        return delete_repo(hero_id=hero_id, session=session)
+    except HeroNotFoundError as e:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Hero not Found"
+            status_code=status.HTTP_404_NOT_FOUND, detail=e.message
         )
-    session.delete(hero)
-    session.commit()
-    return {"ok": True}
