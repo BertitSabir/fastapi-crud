@@ -1,4 +1,4 @@
-# Practicapp: FastAPI CRUD Example
+# Fastapi-crud: FastAPI CRUD Example
 
 A simple CRUD (Create, Read, Update, Delete) API built with FastAPI and SQLModel for practicing API development in Python.
 
