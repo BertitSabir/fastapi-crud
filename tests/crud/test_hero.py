@@ -1,8 +1,8 @@
 import pytest
 from sqlmodel import SQLModel, Session, create_engine
-from models.hero import Hero
+from src.models.hero import Hero, HeroCreate
 
-from crud.hero import (
+from src.crud.hero import (
     list_heroes,
     get_hero,
     create_hero,
@@ -37,7 +37,7 @@ def session_fixture():
 
 def test_create(session):
     # Arrange
-    hero = Hero(name="Spiderman 3", secret_name="Miles Morales", age=25)
+    hero = HeroCreate(name="Spiderman 3", secret_name="Miles Morales", age=25, password="password")
 
     # Act
     created_hero = create_hero(hero=hero, session=session)

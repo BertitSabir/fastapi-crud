@@ -11,7 +11,7 @@ from crud.hero import (
 
 from database import lifespan
 from dependencies import SessionDep
-from models.hero import HeroPublic, HeroCreate, HeroUpdate
+from src.models.hero import HeroPublic, HeroCreate, HeroUpdate
 
 # Create FastAPI app:
 app = FastAPI(lifespan=lifespan)  # noqa
