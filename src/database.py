@@ -17,7 +17,7 @@ def init_db(session: Session):
         Hero(name="Tarantula", secret_name="Natalia Roman-on", age=32),
         Hero(name="Black Lion", secret_name="Trevor Challa", age=35),
         Hero(name="Dr. Weird", secret_name="Steve Weird", age=36),
-        Hero(name="Captain North America", secret_name="Esteban Rogelios", age=93)
+        Hero(name="Captain North America", secret_name="Esteban Rogelios", age=93),
     ]
     for hero in heroes:
         session.add(hero)
@@ -94,7 +94,7 @@ def create_db_and_tables(engine: Engine, models=None):
         connection.execute(text("PRAGMA foreign_keys=ON"))
 
 
-db_url = get_database_url(name='crud')
+db_url = get_database_url(name="crud")
 engine = get_engine(db_url)
 
 

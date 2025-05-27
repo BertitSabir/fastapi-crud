@@ -11,7 +11,7 @@ class HeroNotFoundError(Exception):
 
 
 def hash_password(password: str) -> str:
-    return f'hashed_{password}'
+    return f"hashed_{password}"
 
 
 def create_hero(hero: HeroCreate, session: Session) -> HeroBase:
@@ -46,8 +46,8 @@ def update_hero(hero_id: int, hero: HeroUpdate, session: Session) -> HeroBase:
     # get only the hero data that was set in the request
     hero_data = hero.model_dump(exclude_unset=True)
     extra_data = {}
-    if 'password' in hero_data:
-        hashed_password = hash_password(hero_data['password'])
+    if "password" in hero_data:
+        hashed_password = hash_password(hero_data["password"])
         extra_data["hashed_password"] = hashed_password
     # update the hero_db with the new data
     hero_db.sqlmodel_update(hero_data, update=extra_data)

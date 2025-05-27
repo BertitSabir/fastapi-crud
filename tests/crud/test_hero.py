@@ -37,7 +37,9 @@ def session_fixture():
 
 def test_create(session):
     # Arrange
-    hero = HeroCreate(name="Spiderman 3", secret_name="Miles Morales", age=25, password="password")
+    hero = HeroCreate(
+        name="Spiderman 3", secret_name="Miles Morales", age=25, password="password"
+    )
 
     # Act
     created_hero = create_hero(hero=hero, session=session)

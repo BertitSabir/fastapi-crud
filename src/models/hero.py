@@ -33,6 +33,7 @@ class HeroPublic(HeroBase):
 class HeroCreate(HeroBase):
     password: str
 
+
 class HeroUpdate(HeroCreate):
     name: str | None = None
     age: int | None = None
