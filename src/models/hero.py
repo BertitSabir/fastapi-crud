@@ -23,6 +23,7 @@ class HeroBase(SQLModel):
 class Hero(HeroBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
     secret_name: str = Field(default=None, max_length=50)
+    hashed_password: str | None = Field(default=None)
 
 
 class HeroPublic(HeroBase):
@@ -30,9 +31,10 @@ class HeroPublic(HeroBase):
 
 
 class HeroCreate(HeroBase):
-    pass
+    password: str
 
 class HeroUpdate(HeroCreate):
     name: str | None = None
     age: int | None = None
     secret_name: str | None = None
+    password: str | None = None
