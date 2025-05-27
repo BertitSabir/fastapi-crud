@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Query, HTTPException, status
 from typing import Annotated
-from repository import (
+from crud.hero import (
     create_hero,
     list_heroes,
     get_hero,
@@ -9,9 +9,9 @@ from repository import (
     HeroNotFoundError,
 )
 
-from db import lifespan
+from database import lifespan
 from dependencies import SessionDep
-from models import HeroPublic, HeroCreate, HeroUpdate
+from models.hero import HeroPublic, HeroCreate, HeroUpdate
 
 # Create FastAPI app:
 app = FastAPI(lifespan=lifespan)  # noqa

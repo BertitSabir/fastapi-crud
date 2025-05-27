@@ -1,8 +1,8 @@
 import pytest
 from sqlmodel import SQLModel, Session, create_engine
-from models import Hero
+from models.hero import Hero
 
-from repository import (
+from crud.hero import (
     list_heroes,
     get_hero,
     create_hero,
@@ -31,7 +31,7 @@ def session_fixture():
 
         yield session
 
-        # Clean up the meory database after tests
+        # Clean up the memory database after tests
         SQLModel.metadata.drop_all(engine)
 
 

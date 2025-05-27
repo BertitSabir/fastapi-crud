@@ -1,7 +1,7 @@
 from sqlmodel import Session, select
 from typing import Sequence
 
-from models import HeroBase, Hero
+from models.hero import HeroBase, Hero
 
 
 class HeroNotFoundError(Exception):

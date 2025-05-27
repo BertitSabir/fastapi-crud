@@ -1,13 +1,15 @@
 from typing import Annotated
 from sqlmodel import Session
 from fastapi import Depends
-
-from db import engine
+from database import engine
 
 
 def get_session():
-    with Session(engine) as session:
+    session = Session(engine)
+    try:
         yield session
+    finally:
+        session.close()
 
 
 SessionDep = Annotated[Session, Depends(get_session)]
