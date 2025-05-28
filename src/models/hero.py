@@ -11,7 +11,9 @@ HeroCreate ->   data model: name, age, secret_name
 HeroUpdate ->   data_model: name, age, secret_name
 """
 
-from sqlmodel import SQLModel, Field
+from sqlmodel import SQLModel, Field, Relationship
+
+from src.models.team import Team
 
 
 class HeroBase(SQLModel):
@@ -19,11 +21,15 @@ class HeroBase(SQLModel):
     secret_name: str
     age: int | None = Field(default=None, index=True)
 
+    team_id: int = Field(default=None, foreign_key='team.id')
+
 
 class Hero(HeroBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
     secret_name: str = Field(default=None, max_length=50)
     hashed_password: str | None = Field(default=None)
+
+    team: Team = Relationship(back_populates='heroes')
 
 
 class HeroPublic(HeroBase):
@@ -39,3 +45,4 @@ class HeroUpdate(HeroCreate):
     age: int | None = None
     secret_name: str | None = None
     password: str | None = None
+    team_id: int | None = None
