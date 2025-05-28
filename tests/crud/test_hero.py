@@ -1,5 +1,4 @@
 import pytest
-from sqlmodel import SQLModel, Session, create_engine
 from src.models.hero import Hero, HeroCreate
 
 from src.crud.hero import (
@@ -12,33 +11,10 @@ from src.crud.hero import (
 )
 
 
-@pytest.fixture(name="session")
-def session_fixture():
-    # Create an in-memory SQLite database
-    engine = create_engine(
-        "sqlite:///:memory:", connect_args={"check_same_thread": False}
-    )
-    SQLModel.metadata.create_all(engine)
-    with Session(engine) as session:
-        # Initialize the database with some test data
-        hero_1 = Hero(name="Spiderman 1", secret_name="Peter Parker", age=30)
-        hero_2 = Hero(name="Spiderman 2", secret_name="Ben Reilly", age=28)
-        session.add(hero_1)
-        session.add(hero_2)
-        session.commit()
-        session.refresh(hero_1)
-        session.refresh(hero_2)
-
-        yield session
-
-        # Clean up the memory database after tests
-        SQLModel.metadata.drop_all(engine)
-
-
 def test_create(session):
     # Arrange
     hero = HeroCreate(
-        name="Spiderman 3", secret_name="Miles Morales", age=25, password="password"
+        name="Spiderman 3", secret_name="Miles Morales", age=25, password="password", team_id=1
     )
 
     # Act
@@ -57,9 +33,11 @@ def test_list(session):
     heroes = list_heroes(session=session, offset=0, limit=100)
 
     # Assert
-    assert len(heroes) == 2
+    assert len(heroes) == 4
     assert heroes[0].id == 1
     assert heroes[1].id == 2
+    assert heroes[2].id == 3
+    assert heroes[3].id == 4
 
 
 def test_get_hero_success(session):
@@ -71,9 +49,9 @@ def test_get_hero_success(session):
 
     # Assert
     assert hero.id == hero_id
-    assert hero.name == "Spiderman 1"
-    assert hero.secret_name == "Peter Parker"
-    assert hero.age == 30
+    assert hero.name == "Batman"
+    assert hero.secret_name == "Bruce Wayne"
+    assert hero.age == 35
 
 
 def test_get_not_found_hero(session):
