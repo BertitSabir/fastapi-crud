@@ -1,13 +1,16 @@
 from sqlmodel import Session, select
 from src.models.hero import Hero, HeroCreate, HeroUpdate
 
+
 class HeroNotFoundError(Exception):
     """
     Custom exception raised when a hero is not found in the database.
     """
+
     def __init__(self, message: str = "Hero not found"):
         super().__init__(message)
         self.message = message
+
 
 def hash_password(password: str) -> str:
     """
@@ -21,6 +24,7 @@ def hash_password(password: str) -> str:
     """
     return f"hashed_{password}"
 
+
 def create_hero(hero: HeroCreate, session: Session) -> Hero:
     """
     Creates a new hero in the database.
@@ -32,13 +36,17 @@ def create_hero(hero: HeroCreate, session: Session) -> Hero:
     Returns:
         Hero: The created hero object.
     """
-    hashed_password = hash_password(password=hero.password)
-    extra_data = {"hashed_password": hashed_password}
+    extra_data = {}
+    hero_data = hero.model_dump(exclude_unset=True)
+    if 'password' in hero_data:
+        hashed_password = hash_password(password=hero.password)
+        extra_data = {"hashed_password": hashed_password}
     db_hero = Hero.model_validate(hero, update=extra_data)
     session.add(db_hero)
     session.commit()
     session.refresh(db_hero)
     return db_hero
+
 
 def get_heroes(session: Session, offset: int = 0, limit: int = 100) -> list[Hero]:
     """
@@ -55,6 +63,7 @@ def get_heroes(session: Session, offset: int = 0, limit: int = 100) -> list[Hero
     statement = select(Hero).offset(offset).limit(limit)
     heroes = session.exec(statement=statement).all()
     return heroes
+
 
 def get_hero_by_id(hero_id: int, session: Session) -> Hero:
     """
@@ -74,6 +83,7 @@ def get_hero_by_id(hero_id: int, session: Session) -> Hero:
     if not hero:
         raise HeroNotFoundError(message=f"Hero with id {hero_id} not found")
     return hero
+
 
 def update_hero(hero_id: int, hero: HeroUpdate, session: Session) -> Hero:
     """
@@ -98,6 +108,7 @@ def update_hero(hero_id: int, hero: HeroUpdate, session: Session) -> Hero:
     session.commit()
     session.refresh(hero_db)
     return hero_db
+
 
 def delete_hero(hero_id: int, session: Session) -> dict:
     """
