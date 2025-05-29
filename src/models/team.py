@@ -14,7 +14,7 @@ class TeamBase(SQLModel):
 class Team(TeamBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
 
-    heroes: list['Hero'] = Relationship(back_populates='team', passive_deletes='all')
+    heroes: list["Hero"] = Relationship(back_populates="team", passive_deletes="all")
 
 
 class TeamCreate(TeamBase):
