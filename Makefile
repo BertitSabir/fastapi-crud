@@ -28,3 +28,9 @@ install-dev:
 
 test:
 	uv run pytest --cov=src/ --cov-report=term-missing --cov-report=html tests/
+
+lint:
+	uvx ruff check . --fix
+
+format:
+	uvx ruff format .
