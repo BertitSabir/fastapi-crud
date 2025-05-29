@@ -1,0 +1,84 @@
+import pytest
+from src.models.team import Team, TeamCreate, TeamPublic, TeamUpdate
+
+from src.crud.team import create_team, get_teams, get_team_by_id, TeamNotFoundError, update_team, delete_team
+
+
+def test_create_team(session):
+    # Arrange
+    team = TeamCreate(
+        name='Avengers',
+        headquarters='LA',
+    )
+
+    # Act
+    gotten = create_team(team, session)
+
+    # Assert
+    gotten.name = team.name
+    gotten.headquarters = team.headquarters
+
+
+def test_get_teams(session):
+    # Arrange & Act
+    teams = get_teams(offset=0, limit=1, session=session)
+
+    # Assert
+    assert len(teams) ==  1
+
+
+def test_get_existing_team_by_id(session):
+    # Arrange
+    team_id = 1
+
+    # Act
+    gotten_team = get_team_by_id(team_id=1, session=session)
+
+    # Assert
+    assert gotten_team.id == team_id
+    assert isinstance(gotten_team, Team)
+
+
+def test_get_unexisting_team_by_id(session):
+    # Arrange
+    team_id = 0
+
+    # Act & Assert
+    with pytest.raises(TeamNotFoundError):
+        get_team_by_id(team_id=team_id, session=session)
+
+
+def test_update_team(session):
+    # Arrange
+    team_id = 2
+    team = TeamUpdate(
+        name="Homeless",
+        headquarters=None
+    )
+
+    # Act
+    gotten_team = update_team(team_id=team_id, team=team, session=session)
+
+    # Assert
+    assert gotten_team.name == 'Homeless'
+    assert gotten_team.headquarters is None
+
+
+def test_delete_team(session):
+    # Arrange
+    new_team = create_team(
+        team=TeamCreate(
+            name="Invincible",
+            headquarters='Mars'
+        ),
+        session=session
+    )
+    team_id = new_team.id
+
+    # Act
+    deleted = delete_team(team_id=team_id, session=session)
+
+    # Assert
+    assert deleted
+    with pytest.raises(TeamNotFoundError):
+        get_team_by_id(team_id=team_id, session=session)
