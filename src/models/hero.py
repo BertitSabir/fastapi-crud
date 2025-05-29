@@ -1,19 +1,12 @@
-"""
-Specs:
-- id and secret_name shouldn't be exposed publicly.
-- id must be filled with the database not by the logic.
-- we should only expose and allow updating public data: age and name.
-- we should distinguish schemas from database model:
-Hero -> table model: as a convention we use Hero as SQLModel will infer the table name from it.
-HeroBase -> data model: fields shared by all models. name, age
-HeroPublic ->   data model: id, name, age
-HeroCreate ->   data model: name, age, secret_name
-HeroUpdate ->   data_model: name, age, secret_name
-"""
+from typing import TYPE_CHECKING, Optional
 
 from sqlmodel import SQLModel, Field, Relationship
 
 from src.models.team import Team
+
+
+if TYPE_CHECKING:
+    from src.models.team import Team
 
 
 class HeroBase(SQLModel):
@@ -21,7 +14,7 @@ class HeroBase(SQLModel):
     secret_name: str
     age: int | None = Field(default=None, index=True)
 
-    team_id: int = Field(default=None, foreign_key='team.id')
+    team_id: int | None = Field(default=None, foreign_key='team.id', ondelete='CASCADE')
 
 
 class Hero(HeroBase, table=True):
@@ -29,7 +22,7 @@ class Hero(HeroBase, table=True):
     secret_name: str = Field(default=None, max_length=50)
     hashed_password: str | None = Field(default=None)
 
-    team: Team = Relationship(back_populates='heroes')
+    team: Optional['Team'] = Relationship(back_populates='heroes')
 
 
 class HeroPublic(HeroBase):
