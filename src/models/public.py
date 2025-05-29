@@ -13,8 +13,8 @@ class HeroPublic(HeroBase):
 
 
 class TeamPublicWithHeroes(TeamPublic):
-    heroes: list['HeroPublic'] = []
+    heroes: list["HeroPublic"] = []
 
 
 class HeroPublicWithTeam(HeroPublic):
-    team: Optional['TeamPublic'] = None
+    team: Optional["TeamPublic"] = None

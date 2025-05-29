@@ -23,11 +23,7 @@ def init_db(session: Session):
             headquarters="Gotham",
             heroes=[hero_batman, hero_superman, hero_flash],
         ),
-        Team(
-            name="Humanity",
-            headquarters="Earth",
-            heroes=[hero_cyborg, hero_flash]
-        )
+        Team(name="Humanity", headquarters="Earth", heroes=[hero_cyborg, hero_flash]),
     ]
     for team in teams:
         session.add(team)

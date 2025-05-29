@@ -3,19 +3,22 @@ from typing import Annotated
 from fastapi import Query, HTTPException, APIRouter
 from starlette import status
 
-from src.crud.hero import create_hero, get_heroes, get_hero_by_id, HeroNotFoundError, update_hero, \
-    delete_hero
+from src.crud.hero import (
+    create_hero,
+    get_heroes,
+    get_hero_by_id,
+    HeroNotFoundError,
+    update_hero,
+    delete_hero,
+)
 from src.dependencies import SessionDep
 from src.models.hero import HeroCreate, HeroUpdate, Hero
 from src.models.public import HeroPublicWithTeam, HeroPublic
 
-router = APIRouter(
-    prefix='/heroes',
-    tags=['Heroes']
-)
-@router.post(
-    path="/", status_code=status.HTTP_201_CREATED, response_model=HeroPublic
-)
+router = APIRouter(prefix="/heroes", tags=["Heroes"])
+
+
+@router.post(path="/", status_code=status.HTTP_201_CREATED, response_model=HeroPublic)
 async def create(hero: HeroCreate, session: SessionDep) -> Hero:
     return create_hero(hero=hero, session=session)
 

@@ -11,7 +11,7 @@ class HeroBase(SQLModel):
     secret_name: str
     age: int | None = Field(default=None, index=True)
 
-    team_id: int | None = Field(default=None, foreign_key='team.id', ondelete='CASCADE')
+    team_id: int | None = Field(default=None, foreign_key="team.id", ondelete="CASCADE")
 
 
 class Hero(HeroBase, table=True):
@@ -19,11 +19,11 @@ class Hero(HeroBase, table=True):
     secret_name: str = Field(default=None, max_length=50)
     hashed_password: str | None = Field(default=None)
 
-    team: Optional['Team'] = Relationship(back_populates='heroes')
+    team: Optional["Team"] = Relationship(back_populates="heroes")
 
 
 class HeroCreate(HeroBase):
-    password: str
+    password: str | None = None
 
 
 class HeroUpdate(HeroCreate):

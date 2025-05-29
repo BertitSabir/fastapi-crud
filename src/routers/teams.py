@@ -3,19 +3,22 @@ from typing import Annotated
 from fastapi import Query, HTTPException, APIRouter
 from starlette import status
 
-from src.crud.team import create_team, get_teams, get_team_by_id, TeamNotFoundError, update_team as update_repo, \
-    delete_team
+from src.crud.team import (
+    create_team,
+    get_teams,
+    get_team_by_id,
+    TeamNotFoundError,
+    update_team as update_repo,
+    delete_team,
+)
 from src.dependencies import SessionDep
 from src.models.team import TeamCreate, TeamUpdate, Team
 from src.models.public import TeamPublicWithHeroes, TeamPublic
 
-router = APIRouter(
-    prefix='/teams',
-    tags=['Teams']
-)
-@router.post(
-    path="/", status_code=status.HTTP_201_CREATED, response_model=TeamPublic
-)
+router = APIRouter(prefix="/teams", tags=["Teams"])
+
+
+@router.post(path="/", status_code=status.HTTP_201_CREATED, response_model=TeamPublic)
 async def create(team: TeamCreate, session: SessionDep) -> Team:
     return create_team(team=team, session=session)
 

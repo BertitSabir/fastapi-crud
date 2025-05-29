@@ -1,11 +1,14 @@
 from sqlmodel import Session, select
 from src.models.team import TeamCreate, Team, TeamUpdate
 
+
 class TeamNotFoundError(Exception):
     """
     Exception raised when a specified team cannot be found.
     """
+
     pass
+
 
 def create_team(team: TeamCreate, session: Session) -> Team:
     """

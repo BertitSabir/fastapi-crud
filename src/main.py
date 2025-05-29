@@ -4,7 +4,7 @@ from src.database import lifespan
 from src.routers import heroes, teams
 
 # Create FastAPI app:
-app = FastAPI(lifespan=lifespan)  # noqa
+app = FastAPI(lifespan=lifespan)
 
 
 app.include_router(heroes.router)
