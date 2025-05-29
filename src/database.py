@@ -6,21 +6,30 @@ from sqlalchemy import create_engine, Engine
 from sqlmodel import Session, SQLModel, text
 from pathlib import Path
 
-from src.models.hero import Hero
+from src.models.hero import Hero, Team
 
 
 def init_db(session: Session):
-    heroes = [
-        Hero(name="Deadpond", secret_name="Dive Wilson"),
-        Hero(name="Spider-Boy", secret_name="Pedro Parqueador"),
-        Hero(name="Rusty-Man", secret_name="Tommy Sharp", age=48),
-        Hero(name="Tarantula", secret_name="Natalia Roman-on", age=32),
-        Hero(name="Black Lion", secret_name="Trevor Challa", age=35),
-        Hero(name="Dr. Weird", secret_name="Steve Weird", age=36),
-        Hero(name="Captain North America", secret_name="Esteban Rogelios", age=93),
+    # Heroes
+    hero_batman = Hero(name="Batman", secret_name="Bruce Wayne", age=35)
+    hero_superman = Hero(name="Superman", secret_name="Clark Kent", age=30)
+    hero_flash = Hero(name="Flash", secret_name="Barry Allen", age=28)
+    hero_cyborg = Hero(name="Cyborg", secret_name="Victor Stone", age=25)
+    # Teams
+    teams = [
+        Team(
+            name="Justice League",
+            headquarters="Gotham",
+            heroes=[hero_batman, hero_superman, hero_flash],
+        ),
+        Team(
+            name="Humanity",
+            headquarters="Earth",
+            heroes=[hero_cyborg, hero_flash]
+        )
     ]
-    for hero in heroes:
-        session.add(hero)
+    for team in teams:
+        session.add(team)
         session.commit()
 
 
