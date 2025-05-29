@@ -24,7 +24,3 @@ class TeamCreate(TeamBase):
 class TeamUpdate(TeamBase):
     name: str | None = None
     headquarters: str | None = None
-
-
-class TeamPublic(TeamBase):
-    id: int

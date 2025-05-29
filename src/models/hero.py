@@ -2,9 +2,6 @@ from typing import TYPE_CHECKING, Optional
 
 from sqlmodel import SQLModel, Field, Relationship
 
-from src.models.team import Team
-
-
 if TYPE_CHECKING:
     from src.models.team import Team
 
@@ -23,10 +20,6 @@ class Hero(HeroBase, table=True):
     hashed_password: str | None = Field(default=None)
 
     team: Optional['Team'] = Relationship(back_populates='heroes')
-
-
-class HeroPublic(HeroBase):
-    id: int
 
 
 class HeroCreate(HeroBase):
