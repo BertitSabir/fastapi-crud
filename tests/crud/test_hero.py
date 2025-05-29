@@ -1,20 +1,21 @@
 import pytest
-from src.models.hero import Hero, HeroCreate
+from src.models.hero import Hero, HeroCreate, HeroUpdate
 
 from src.crud.hero import (
-    list_heroes,
-    get_hero,
+    get_heroes,
+    get_hero_by_id,
     create_hero,
     update_hero,
     delete_hero,
-    HeroNotFoundError,
+    HeroNotFoundError, hash_password,
 )
 
 
-def test_create(session):
+def test_create_hero(session):
     # Arrange
+    password = 'password'
     hero = HeroCreate(
-        name="Spiderman 3", secret_name="Miles Morales", age=25, password="password", team_id=1
+        name="Spiderman 3", secret_name="Miles Morales", age=25, password=password, team_id=1
     )
 
     # Act
@@ -25,12 +26,13 @@ def test_create(session):
     assert created_hero.name == "Spiderman 3"
     assert created_hero.secret_name == "Miles Morales"
     assert created_hero.age == 25
+    assert created_hero.hashed_password == hash_password(password=password)
 
 
 def test_list(session):
     # Arrange
     # Act
-    heroes = list_heroes(session=session, offset=0, limit=100)
+    heroes = get_heroes(session=session, offset=0, limit=100)
 
     # Assert
     assert len(heroes) == 4
@@ -40,12 +42,12 @@ def test_list(session):
     assert heroes[3].id == 4
 
 
-def test_get_hero_success(session):
+def test_get_existing_hero_by_id(session):
     # Arrange
     hero_id = 1
 
     # Act
-    hero = get_hero(hero_id=hero_id, session=session)
+    hero = get_hero_by_id(hero_id=hero_id, session=session)
 
     # Assert
     assert hero.id == hero_id
@@ -54,19 +56,21 @@ def test_get_hero_success(session):
     assert hero.age == 35
 
 
-def test_get_not_found_hero(session):
+def test_get_unexisting_hero_by_id(session):
     # Arrange
     hero_id = 0
 
     # Act & Assert
     with pytest.raises(HeroNotFoundError, match=f"Hero with id {hero_id} not found"):
-        get_hero(hero_id=hero_id, session=session)
+        get_hero_by_id(hero_id=hero_id, session=session)
 
 
 def test_update_hero(session):
     # Arrange
-    original_hero = get_hero(hero_id=1, session=session)
-    updated_hero = Hero(name="Spiderman 3", age=31)
+    new_password = 'newpassword'
+    hashed_new_password = hash_password(password=new_password)
+    original_hero = get_hero_by_id(hero_id=1, session=session)
+    updated_hero = HeroUpdate(name="Spiderman 3", age=31, password=new_password)
 
     # Act
     updated_hero = update_hero(
@@ -77,6 +81,7 @@ def test_update_hero(session):
     assert updated_hero.id == original_hero.id
     assert updated_hero.name == "Spiderman 3"
     assert updated_hero.age == 31
+    assert updated_hero.hashed_password == hashed_new_password
 
 
 def test_delete_hero(session):
@@ -84,11 +89,11 @@ def test_delete_hero(session):
     hero_id = 1
 
     # Act
-    result = delete_hero(hero_id=hero_id, session=session)
+    deleted = delete_hero(hero_id=hero_id, session=session)
 
     # Assert
-    assert result == {"ok": True}
+    assert deleted
 
     # Verify the hero is deleted
     with pytest.raises(HeroNotFoundError, match=f"Hero with id {hero_id} not found"):
-        get_hero(hero_id=hero_id, session=session)
+        get_hero_by_id(hero_id=hero_id, session=session)

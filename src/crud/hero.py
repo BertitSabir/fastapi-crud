@@ -1,7 +1,7 @@
 from sqlmodel import Session, select
 from typing import Sequence
 
-from src.models.hero import HeroBase, Hero, HeroCreate, HeroPublic, HeroUpdate
+from src.models.hero import Hero, HeroCreate, HeroUpdate
 
 
 class HeroNotFoundError(Exception):
@@ -14,7 +14,7 @@ def hash_password(password: str) -> str:
     return f"hashed_{password}"
 
 
-def create_hero(hero: HeroCreate, session: Session) -> HeroBase:
+def create_hero(hero: HeroCreate, session: Session) -> Hero:
     hashed_password = hash_password(password=hero.password)
     extra_data = {"hashed_password": hashed_password}
     db_hero = Hero.model_validate(hero, update=extra_data)
@@ -24,25 +24,25 @@ def create_hero(hero: HeroCreate, session: Session) -> HeroBase:
     return db_hero
 
 
-def list_heroes(
+def get_heroes(
     session: Session,
     offset: int = 0,
     limit: int = 100,
-) -> Sequence[HeroPublic]:
+) -> Sequence[Hero]:
     statement = select(Hero).offset(offset).limit(limit)
     heroes = session.exec(statement=statement).all()
     return heroes
 
 
-def get_hero(hero_id: int, session: Session) -> HeroPublic:
+def get_hero_by_id(hero_id: int, session: Session) -> Hero:
     hero = session.get(Hero, hero_id)
     if not hero:
         raise HeroNotFoundError(message=f"Hero with id {hero_id} not found")
     return hero
 
 
-def update_hero(hero_id: int, hero: HeroUpdate, session: Session) -> HeroBase:
-    hero_db = get_hero(hero_id, session)
+def update_hero(hero_id: int, hero: HeroUpdate, session: Session) -> Hero:
+    hero_db = get_hero_by_id(hero_id, session)
     # get only the hero data that was set in the request
     hero_data = hero.model_dump(exclude_unset=True)
     extra_data = {}
@@ -59,7 +59,7 @@ def update_hero(hero_id: int, hero: HeroUpdate, session: Session) -> HeroBase:
 
 
 def delete_hero(hero_id: int, session: Session) -> dict:
-    hero_db = get_hero(hero_id, session)
+    hero_db = get_hero_by_id(hero_id, session)
     session.delete(hero_db)
     session.commit()
-    return {"ok": True}
+    return True
