@@ -1,15 +1,21 @@
 import pytest
 from src.models.team import Team, TeamCreate, TeamUpdate
-from src.models.public import TeamPublic
 
-from src.crud.team import create_team, get_teams, get_team_by_id, TeamNotFoundError, update_team, delete_team
+from src.crud.team import (
+    create_team,
+    get_teams,
+    get_team_by_id,
+    TeamNotFoundError,
+    update_team,
+    delete_team,
+)
 
 
 def test_create_team(session):
     # Arrange
     team = TeamCreate(
-        name='Avengers',
-        headquarters='LA',
+        name="Avengers",
+        headquarters="LA",
     )
 
     # Act
@@ -20,15 +26,16 @@ def test_create_team(session):
     gotten.headquarters = team.headquarters
 
 
-def test_get_teams(session):
-    # Arrange & Act
+def test_get_teams(session, team_avengers_is_here):
+    # Act
     teams = get_teams(offset=0, limit=1, session=session)
 
     # Assert
-    assert len(teams) ==  1
+    assert len(teams) == 1
+    assert isinstance(teams, list)
 
 
-def test_get_existing_team_by_id(session):
+def test_get_existing_team_by_id(session, team_avengers_is_here):
     # Arrange
     team_id = 1
 
@@ -49,32 +56,22 @@ def test_get_unexisting_team_by_id(session):
         get_team_by_id(team_id=team_id, session=session)
 
 
-def test_update_team(session):
+def test_update_team(session, team_avengers_is_here):
     # Arrange
-    team_id = 2
-    team = TeamUpdate(
-        name="Homeless",
-        headquarters=None
-    )
+    team_id = team_avengers_is_here.id
+    team = TeamUpdate(name="Homeless", headquarters=None)
 
     # Act
     gotten_team = update_team(team_id=team_id, team=team, session=session)
 
     # Assert
-    assert gotten_team.name == 'Homeless'
+    assert gotten_team.name == "Homeless"
     assert gotten_team.headquarters is None
 
 
-def test_delete_team(session):
+def test_delete_team(session, team_avengers_is_here):
     # Arrange
-    new_team = create_team(
-        team=TeamCreate(
-            name="Invincible",
-            headquarters='Mars'
-        ),
-        session=session
-    )
-    team_id = new_team.id
+    team_id = team_avengers_is_here.id
 
     # Act
     deleted = delete_team(team_id=team_id, session=session)
