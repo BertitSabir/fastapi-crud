@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Optional
 from sqlmodel import SQLModel, Field, Relationship
 
 if TYPE_CHECKING:
-    from src.models.team import Team
+    from src.models.team import Team  # pragma: no cover
 
 
 class HeroBase(SQLModel):

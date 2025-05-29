@@ -15,6 +15,7 @@ from src.dependencies import SessionDep
 from src.models.team import TeamCreate, TeamUpdate, Team
 from src.models.public import TeamPublicWithHeroes, TeamPublic
 
+
 router = APIRouter(prefix="/teams", tags=["Teams"])
 
 

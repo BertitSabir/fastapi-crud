@@ -38,7 +38,7 @@ def create_hero(hero: HeroCreate, session: Session) -> Hero:
     """
     extra_data = {}
     hero_data = hero.model_dump(exclude_unset=True)
-    if 'password' in hero_data:
+    if "password" in hero_data:
         hashed_password = hash_password(password=hero.password)
         extra_data = {"hashed_password": hashed_password}
     db_hero = Hero.model_validate(hero, update=extra_data)
