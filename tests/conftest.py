@@ -12,7 +12,7 @@ from src.models.hero import Hero
 from src.models.team import Team, TeamCreate
 
 
-@pytest.fixture(name="session", scope='module')
+@pytest.fixture(name="session", scope="module")
 def session_fixture():
     test_db_url = "testing.db"
     # Create an in-memory SQLite database
@@ -21,14 +21,13 @@ def session_fixture():
     )
     SQLModel.metadata.create_all(engine)
     with Session(engine) as session:
-
         yield session
 
         # Clean up the memory database after tests
         SQLModel.metadata.drop_all(engine)
 
 
-@pytest.fixture(name='client')
+@pytest.fixture(name="client")
 def client_fixture(session):
     # Heroes
     hero_batman = Hero(name="Batman", secret_name="Bruce Wayne", age=35)
