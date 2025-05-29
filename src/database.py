@@ -6,7 +6,8 @@ from sqlalchemy import create_engine, Engine
 from sqlmodel import Session, SQLModel, text
 from pathlib import Path
 
-from src.models.hero import Hero, Team
+from src.models.hero import Hero
+from src.models.team import Team
 
 
 def init_db(session: Session):

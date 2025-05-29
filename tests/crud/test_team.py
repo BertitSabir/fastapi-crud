@@ -1,5 +1,6 @@
 import pytest
-from src.models.team import Team, TeamCreate, TeamPublic, TeamUpdate
+from src.models.team import Team, TeamCreate, TeamUpdate
+from src.models.public import TeamPublic
 
 from src.crud.team import create_team, get_teams, get_team_by_id, TeamNotFoundError, update_team, delete_team
 
