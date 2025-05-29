@@ -7,19 +7,34 @@ A simple CRUD (Create, Read, Update, Delete) API built with FastAPI and SQLModel
 - **FastAPI** for high-performance asynchronous APIs
 - **SQLModel** for ORM and data validation
 - **SQLite** as the database backend
-- **CRUD operations** for managing heroes
+- **CRUD operations** for managing heroes and teams
+- **Relationship modeling** between heroes and teams
 - Automatic database creation and sample data on startup
+- Structured code organization with separate modules for models, routers, and CRUD operations
 
 ## Project Structure
 
 ```
-db.py              # Database setup, initialization, and sample data
-models.py          # SQLModel models and schemas for Hero
-main.py            # FastAPI app and API endpoints
-dependencies.py    # Dependency injection for DB sessions
-pyproject.toml     # Project metadata and dependencies
-LICENSE            # MIT License
-README.md          # Project documentation
+src/
+├── __init__.py
+├── crud/                # Database CRUD operations
+│   ├── __init__.py
+│   ├── hero.py          # Hero CRUD operations
+│   └── team.py          # Team CRUD operations
+├── database.py          # Database setup, initialization, and sample data
+├── dependencies.py      # Dependency injection for DB sessions
+├── main.py              # FastAPI app initialization
+├── models/              # SQLModel models and schemas
+│   ├── __init__.py
+│   ├── hero.py          # Hero models
+│   └── team.py          # Team models
+└── routers/             # API endpoints
+    ├── __init__.py
+    ├── heroes.py        # Hero endpoints
+    └── teams.py         # Team endpoints
+pyproject.toml           # Project metadata and dependencies
+LICENSE                  # MIT License
+README.md                # Project documentation
 ```
 
 ## Installation
@@ -59,10 +74,18 @@ Interactive API docs: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 - `PATCH  /heroes/{id}`     - Update a hero by ID
 - `DELETE /heroes/{id}`     - Delete a hero by ID
 
+### Teams
+- `POST   /teams/`          - Create a new team
+- `GET    /teams/`          - List all teams (with pagination)
+- `GET    /teams/{id}`      - Get a team by ID
+- `PATCH  /teams/{id}`      - Update a team by ID
+- `DELETE /teams/{id}`      - Delete a team by ID
+
 ## Database
 
-- Uses SQLite (`database.db`) for storage
+- Uses SQLite (`crud.db`) for storage
 - Tables and sample data are created automatically on first run
+- Includes relationship between heroes and teams
 
 ## Requirements
 
