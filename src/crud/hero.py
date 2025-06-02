@@ -1,11 +1,10 @@
 from sqlmodel import Session, select
+
 from src.models.hero import Hero, HeroCreate, HeroUpdate
 
 
 class HeroNotFoundError(Exception):
-    """
-    Custom exception raised when a hero is not found in the database.
-    """
+    """Custom exception raised when a hero is not found in the database."""
 
     def __init__(self, message: str = "Hero not found"):
         super().__init__(message)
@@ -21,6 +20,7 @@ def hash_password(password: str) -> str:
 
     Returns:
         str: The hashed password.
+
     """
     return f"hashed_{password}"
 
@@ -35,6 +35,7 @@ def create_hero(hero: HeroCreate, session: Session) -> Hero:
 
     Returns:
         Hero: The created hero object.
+
     """
     extra_data = {}
     hero_data = hero.model_dump(exclude_unset=True)
@@ -59,6 +60,7 @@ def get_heroes(session: Session, offset: int = 0, limit: int = 100) -> list[Hero
 
     Returns:
         list[Hero]: A list of hero objects.
+
     """
     statement = select(Hero).offset(offset).limit(limit)
     heroes = session.exec(statement=statement).all()
@@ -78,6 +80,7 @@ def get_hero_by_id(hero_id: int, session: Session) -> Hero:
 
     Returns:
         Hero: The hero object.
+
     """
     hero = session.get(Hero, hero_id)
     if not hero:
@@ -96,6 +99,7 @@ def update_hero(hero_id: int, hero: HeroUpdate, session: Session) -> Hero:
 
     Returns:
         Hero: The updated hero object.
+
     """
     hero_db = get_hero_by_id(hero_id, session)
     hero_data = hero.model_dump(exclude_unset=True)
@@ -120,6 +124,7 @@ def delete_hero(hero_id: int, session: Session) -> dict:
 
     Returns:
         dict: A confirmation of the deletion.
+
     """
     hero_db = get_hero_by_id(hero_id, session)
     session.delete(hero_db)

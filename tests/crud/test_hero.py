@@ -1,15 +1,16 @@
+# ruff: noqa: S101, S106, S105, PLR2004
 import pytest
-from src.models.hero import HeroCreate, HeroUpdate, Hero
 
 from src.crud.hero import (
-    get_heroes,
-    get_hero_by_id,
-    create_hero,
-    update_hero,
-    delete_hero,
     HeroNotFoundError,
+    create_hero,
+    delete_hero,
+    get_hero_by_id,
+    get_heroes,
     hash_password,
+    update_hero,
 )
+from src.models.hero import Hero, HeroCreate, HeroUpdate
 
 
 def test_create_hero(session):
@@ -88,7 +89,9 @@ def test_update_hero(session, batman_is_here):
 
     # Act
     updated_hero = update_hero(
-        hero_id=hero_batman.id, hero=updated_hero, session=session
+        hero_id=hero_batman.id,
+        hero=updated_hero,
+        session=session,
     )
 
     # Assert

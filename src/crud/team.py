@@ -1,13 +1,10 @@
 from sqlmodel import Session, select
-from src.models.team import TeamCreate, Team, TeamUpdate
+
+from src.models.team import Team, TeamCreate, TeamUpdate
 
 
 class TeamNotFoundError(Exception):
-    """
-    Exception raised when a specified team cannot be found.
-    """
-
-    pass
+    """Exception raised when a specified team cannot be found."""
 
 
 def create_team(team: TeamCreate, session: Session) -> Team:
@@ -20,6 +17,7 @@ def create_team(team: TeamCreate, session: Session) -> Team:
 
     Returns:
         Team: The newly created and saved team instance.
+
     """
     db_team = Team.model_validate(team)
     session.add(db_team)
@@ -39,6 +37,7 @@ def get_teams(*, offset: int = 0, limit: int = 100, session: Session) -> list[Te
 
     Returns:
         list[Team]: A list of retrieved team objects.
+
     """
     statement = select(Team).offset(offset).limit(limit)
     return session.exec(statement).all()
@@ -57,10 +56,12 @@ def get_team_by_id(*, team_id: int, session: Session) -> Team:
 
     Raises:
         TeamNotFoundError: If no team is found with the given identifier.
+
     """
     team = session.get(Team, team_id)
     if not team:
-        raise TeamNotFoundError(f"Team with id: {team_id} not found")
+        message = f"Team with id: {team_id} not found"
+        raise TeamNotFoundError(message)
     return team
 
 
@@ -75,6 +76,7 @@ def update_team(*, team_id: int, team: TeamUpdate, session: Session) -> Team:
 
     Returns:
         Team: The updated team object.
+
     """
     db_team = get_team_by_id(team_id=team_id, session=session)
     team_data = team.model_dump(exclude_unset=True)
@@ -95,6 +97,7 @@ def delete_team(*, team_id: int, session: Session) -> bool:
 
     Returns:
         bool: True if the team was successfully deleted.
+
     """
     db_team = get_team_by_id(team_id=team_id, session=session)
     session.delete(db_team)

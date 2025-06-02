@@ -1,0 +1,61 @@
+from pathlib import Path
+from typing import Annotated
+
+from fastapi import APIRouter, Form, Request, status
+from fastapi.responses import HTMLResponse, RedirectResponse
+from starlette.status import HTTP_302_FOUND
+from starlette.templating import Jinja2Templates
+
+from src.crud.user import create_user
+from src.dependencies import SessionDep
+from src.models.public import UserPublic
+from src.models.user import User, UserCreate
+from src.security.session import authenticate_user
+
+templates_path = Path(__file__).parent.parent / "templates"
+templates = Jinja2Templates(directory=templates_path)
+router = APIRouter(prefix="/users", tags=["Users"])
+
+
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=UserPublic)
+async def create(user: UserCreate, session: SessionDep) -> User:
+    return create_user(user, session)
+
+
+@router.get("/login", response_class=HTMLResponse)
+def login_form(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
+
+
+@router.post("/login", response_class=HTMLResponse)
+def login(
+    *,
+    request: Request,
+    email: Annotated[str, Form()] = ...,
+    password: Annotated[str, Form()] = ...,
+    session: SessionDep,
+):
+    user = authenticate_user(email=email, plain_password=password, session=session)
+    if not user:
+        return templates.TemplateResponse(
+            "login.html",
+            {"request": request, "error": "Invalid credentials"},
+        )
+
+    request.session["user_id"] = user.id
+    return RedirectResponse("/users/home", status_code=HTTP_302_FOUND)
+
+
+@router.get("/home", response_class=HTMLResponse)
+def homepage(request: Request):
+    user_id = request.session.get("user_id")
+    return templates.TemplateResponse(
+        "home.html",
+        {"request": request, "user_id": user_id},
+    )
+
+
+@router.get("/logout")
+async def logout(request: Request):
+    request.session.clear()
+    return RedirectResponse(url="/users/home", status_code=302)

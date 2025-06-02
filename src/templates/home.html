@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+  {% if user_id %}
+    <h2>Welcome user {{ user_id }}</h2>
+    <a href="/users/logout">Logout</a>
+  {% else %}
+    <h2>Welcome guest</h2>
+    <a href="/users/login">Login</a>
+  {% endif %}
+{% endblock %}
