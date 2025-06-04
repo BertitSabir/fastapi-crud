@@ -1,3 +1,4 @@
+import functools
 from pathlib import Path
 from typing import Annotated
 
@@ -6,7 +7,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from starlette.status import HTTP_302_FOUND
 from starlette.templating import Jinja2Templates
 
-from src.crud.user import create_user
+from src.crud.user import create_user, get_user_by_id
 from src.dependencies import SessionDep
 from src.models.public import UserPublic
 from src.models.user import User, UserCreate
@@ -14,7 +15,19 @@ from src.security.session import authenticate_user
 
 templates_path = Path(__file__).parent.parent / "templates"
 templates = Jinja2Templates(directory=templates_path)
+
 router = APIRouter(prefix="/users", tags=["Users"])
+
+
+def login_required(func):
+    @functools.wraps(func)
+    async def wrapper(*args, **kwargs):
+        request = kwargs.get("request")
+        if not request or "user_id" not in request.session:
+            return RedirectResponse(url="/users/login", status_code=HTTP_302_FOUND)
+        return await func(*args, **kwargs)
+
+    return wrapper
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=UserPublic)
@@ -55,7 +68,21 @@ def homepage(request: Request):
     )
 
 
-@router.get("/logout")
+@router.get("/profile", response_class=HTMLResponse)
+@login_required
+async def profile(request: Request, session: SessionDep):
+    user_id = request.session.get("user_id")
+    user = get_user_by_id(user_id=user_id, session=session)
+    uer_profile = UserPublic(**user.model_dump())
+    # Here you would typically fetch the user details from the database
+    # For demonstration, we will just pass the user_id
+    return templates.TemplateResponse(
+        "profile.html",
+        {"request": request, "user": uer_profile},
+    )
+
+
+@router.get("/logout", status_code=status.HTTP_302_FOUND)
 async def logout(request: Request):
     request.session.clear()
-    return RedirectResponse(url="/users/home", status_code=302)
+    return RedirectResponse(url="/users/home", status_code=HTTP_302_FOUND)

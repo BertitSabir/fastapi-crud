@@ -6,16 +6,16 @@ class UserBase(SQLModel):
     username: str = Field(unique=True)
     full_name: str = Field(index=True)
     email: EmailStr = Field(unique=True)
-    password: str
 
 
 class User(UserBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
     verified: bool = False
+    password: str
 
 
 class UserCreate(UserBase):
-    pass
+    password: str = ...
 
 
 class UserUpdate(UserCreate):

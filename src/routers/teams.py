@@ -1,20 +1,21 @@
 from typing import Annotated
 
-from fastapi import Query, HTTPException, APIRouter
+from fastapi import APIRouter, HTTPException, Query
 from starlette import status
 
 from src.crud.team import (
-    create_team,
-    get_teams,
-    get_team_by_id,
     TeamNotFoundError,
-    update_team as update_repo,
+    create_team,
     delete_team,
+    get_team_by_id,
+    get_teams,
+)
+from src.crud.team import (
+    update_team as update_repo,
 )
 from src.dependencies import SessionDep
-from src.models.team import TeamCreate, TeamUpdate, Team
-from src.models.public import TeamPublicWithHeroes, TeamPublic
-
+from src.models.public import TeamPublic, TeamPublicWithHeroes
+from src.models.team import Team, TeamCreate, TeamUpdate
 
 router = APIRouter(prefix="/teams", tags=["Teams"])
 
@@ -41,7 +42,7 @@ async def get_team(
     try:
         return get_team_by_id(team_id=team_id, session=session)
     except TeamNotFoundError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
 
 
 @router.patch(path="/{team_id}", response_model=TeamPublic)
@@ -49,7 +50,7 @@ async def update(team_id: int, team: TeamUpdate, session: SessionDep) -> Team:
     try:
         return update_repo(team_id=team_id, team=team, session=session)
     except TeamNotFoundError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
 
 
 @router.delete("/{team_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -57,4 +58,4 @@ async def delete(team_id: int, session: SessionDep):
     try:
         delete_team(team_id=team_id, session=session)
     except TeamNotFoundError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
