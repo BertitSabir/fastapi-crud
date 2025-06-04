@@ -1,23 +1,27 @@
 import logging
+from datetime import timedelta
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
+from src.config.settings import settings
 from src.crud.user import (
     UserAlreadyExistsError,
-    UserNotFoundError,
     create_user,
-    get_user_by_username,
     get_users,
 )
 from src.dependencies import (
-    OAuth2PasswordBearerDep,
     OAuth2PasswordRequestFormDep,
     SessionDep,
 )
 from src.models.public import UserPublic
-from src.models.user import User, UserCreate, UserLogin
-from src.security.utils import verify_password
+from src.models.user import User, UserCreate
+from src.security.oauth2 import (
+    Token,
+    authenticate_user,
+    create_access_token,
+    get_current_user,
+)
 
 router = APIRouter(
     prefix="/users",
@@ -26,20 +30,6 @@ router = APIRouter(
 
 
 logger = logging.getLogger(__name__)
-
-
-async def get_current_user(token: OAuth2PasswordBearerDep, session: SessionDep):
-    logger.info("toke: %s", token)
-    try:
-        user = get_user_by_username(username=token, session=session)
-    except UserNotFoundError as e:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        ) from e
-    else:
-        return user
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=UserPublic)
@@ -56,8 +46,8 @@ async def create(user: UserCreate, session: SessionDep) -> User:
 @router.get("/", response_model=list[UserPublic])
 async def list_users(
     *,
-    offset: Annotated[int, Query(...)] = 0,
-    limit: Annotated[int, Query(...)] = 100,
+    offset: Annotated[int, Query(ge=0)] = 0,
+    limit: Annotated[int, Query(le=100)] = 100,
     session: SessionDep,
     current_user: Annotated[User, Depends(get_current_user)],
 ) -> list[User]:
@@ -65,31 +55,25 @@ async def list_users(
     return get_users(offset=offset, limit=limit, session=session)
 
 
-@router.post("/token")
-async def login(
+@router.post("/token", response_model=Token)
+async def login_for_access_token(
     credentials: OAuth2PasswordRequestFormDep,
     session: SessionDep,
 ):
-    validated_credentials = UserLogin(
+    user = await authenticate_user(
         username=credentials.username,
         password=credentials.password,
+        session=session,
     )
-    try:
-        user = get_user_by_username(
-            username=validated_credentials.username,
-            session=session,
-        )
-    except UserNotFoundError as e:
+    if not user:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User does not exist",
-        ) from e
-    if not verify_password(
-        plain_password=credentials.password,
-        hashed_password=user.password,
-    ):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Incorrect password",
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
         )
-    return {"access_token": user.username}
+    access_toke_expires = timedelta(minutes=settings.access_token_expire_minutes)
+    jwt = create_access_token(
+        data={"sub": user.username},
+        expires_delta=access_toke_expires,
+    )
+    return Token(access_token=jwt, token_type="bearer")  # noqa: S106
