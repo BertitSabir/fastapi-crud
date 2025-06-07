@@ -1,38 +1,10 @@
 import pytest
-from faker import Faker
 
 from src.crud.auth_session import (
-    create_auth_session,
     get_session_by_id,
     get_session_by_user_id,
 )
-from src.crud.user import AuthSessionNotFoundError, create_user
-from src.models.auth_session import AuthSessionCreate
-from src.models.user import UserCreate
-
-fake = Faker()
-
-
-@pytest.fixture(name="user")
-def user_fixture(session):
-    # Arrange
-    user_create = UserCreate(
-        username=fake.user_name(),
-        full_name=fake.name(),
-        email=fake.email(),
-        password=fake.password(),
-    )
-    user = create_user(user=user_create, session=session)
-    return user
-
-
-@pytest.fixture(name="auth_session")
-def auth_session_fixture(session, user):
-    auth_session = create_auth_session(
-        auth_session=AuthSessionCreate(user_id=user.id),
-        session=session,
-    )
-    return auth_session
+from src.crud.user import AuthSessionNotFoundError
 
 
 def test_create_auth_session(auth_session):

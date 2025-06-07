@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 from typing import Annotated
 
@@ -19,6 +20,8 @@ templates = Jinja2Templates(directory=templates_path)
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
+logger = logging.getLogger(__name__)
+
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=UserPublic)
 async def create(user: UserCreate, session: SessionDep) -> User:
@@ -27,7 +30,7 @@ async def create(user: UserCreate, session: SessionDep) -> User:
 
 @router.get("/login", response_class=HTMLResponse)
 async def login_form(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="login.html")
 
 
 @router.post("/login", response_class=HTMLResponse)
@@ -41,15 +44,16 @@ async def login(
     user = authenticate_user(email=email, plain_password=password, session=session)
     if not user:
         return templates.TemplateResponse(
-            "login.html",
-            {"request": request, "error": "Invalid credentials"},
+            request=request,
+            name="login.html",
+            context={"error": "Invalid credentials"},
+            status_code=status.HTTP_401_UNAUTHORIZED,
         )
     auth_session = create_auth_session(AuthSessionCreate(user_id=user.id), session)
     request.session["user_id"] = user.id
     request.session["session_id"] = auth_session.id
     request.state.user = user
-    response = RedirectResponse("/users/home", status_code=HTTP_302_FOUND)
-    return response
+    return RedirectResponse("/users/home", status_code=HTTP_302_FOUND)
 
 
 @router.get("/home", response_class=HTMLResponse)
@@ -70,8 +74,9 @@ async def profile(
 ):
     user_profile = UserPublic(**user.model_dump())
     return templates.TemplateResponse(
-        "profile.html",
-        {"request": request, "user": user_profile},
+        request=request,
+        name="profile.html",
+        context={"user": user_profile},
     )
 
 

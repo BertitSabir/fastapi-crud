@@ -1,3 +1,6 @@
+from fastapi import status
+
+
 def test_create_team(client):
     # Arrange
     team_data = {"name": "Avengers", "headquarters": "Earth"}
@@ -7,7 +10,7 @@ def test_create_team(client):
     data = response.json()
 
     # Assert
-    assert response.status_code == 201
+    assert response.status_code == status.HTTP_201_CREATED
     assert data["name"] == team_data["name"]
     assert data["headquarters"] == team_data["headquarters"]
     assert data["id"] is not None
@@ -22,7 +25,7 @@ def test_list_teams(client):
     response = client.get("/teams/", params={"offset": offset, "limit": limit})
 
     # Assert
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
 
 
 def test_get_existing_team_by_id(client):
@@ -33,7 +36,7 @@ def test_get_existing_team_by_id(client):
     response = client.get(f"/teams/{team_id}")
 
     # Assert
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
 
 
 def test_get_unexisting_team_by_id(client):
@@ -44,7 +47,7 @@ def test_get_unexisting_team_by_id(client):
     response = client.get(f"/teams/{team_id}")
 
     # Assert
-    assert response.status_code == 404
+    assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
 def test_update_existing_team(client):
@@ -56,7 +59,7 @@ def test_update_existing_team(client):
     response = client.patch(url=f"/teams/{team_id}", json=team_data)
 
     # Assert
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
 
 
 def test_update_unexisting_team(client):
@@ -67,7 +70,7 @@ def test_update_unexisting_team(client):
     response = client.patch(url=f"/teams/{team_id}", json={})
 
     # Assert
-    assert response.status_code == 404
+    assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
 def test_delete_existing_team(client):
@@ -78,7 +81,7 @@ def test_delete_existing_team(client):
     response = client.delete(url=f"/teams/{team_id}")
 
     # Assert
-    assert response.status_code == 204
+    assert response.status_code == status.HTTP_204_NO_CONTENT
 
 
 def test_delete_unexisting_team(client):
@@ -89,4 +92,4 @@ def test_delete_unexisting_team(client):
     response = client.delete(url=f"/teams/{team_id}")
 
     # Assert
-    assert response.status_code == 404
+    assert response.status_code == status.HTTP_404_NOT_FOUND
