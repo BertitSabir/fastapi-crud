@@ -1,6 +1,8 @@
 from typing import Annotated
-from sqlmodel import Session
+
 from fastapi import Depends
+from sqlmodel import Session
+
 from src.database import engine
 
 

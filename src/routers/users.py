@@ -2,13 +2,15 @@ import functools
 from pathlib import Path
 from typing import Annotated
 
-from fastapi import APIRouter, Form, Request, status
+from fastapi import APIRouter, Form, HTTPException, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 from starlette.status import HTTP_302_FOUND
 from starlette.templating import Jinja2Templates
 
-from src.crud.user import create_user, get_user_by_id
+from src.crud.auth_session import create_auth_session, get_session_by_id
+from src.crud.user import AuthSessionNotFoundError, create_user
 from src.dependencies import SessionDep
+from src.models.auth_session import AuthSessionCreate
 from src.models.public import UserPublic
 from src.models.user import User, UserCreate
 from src.security.session import authenticate_user
@@ -23,8 +25,31 @@ def login_required(func):
     @functools.wraps(func)
     async def wrapper(*args, **kwargs):
         request = kwargs.get("request")
-        if not request or "user_id" not in request.session:
-            return RedirectResponse(url="/users/login", status_code=HTTP_302_FOUND)
+        session = kwargs.get("session")
+        session_id = request.session.get("session_id")
+
+        if not session_id:
+            raise HTTPException(
+                status_code=HTTP_302_FOUND,
+                headers={"Location": "/users/login"},
+            )
+
+        try:
+            auth_session = get_session_by_id(session_id=session_id, session=session)
+        except AuthSessionNotFoundError as e:
+            raise HTTPException(
+                status_code=HTTP_302_FOUND,
+                headers={"Location": "/users/login"},
+            ) from e
+
+        if auth_session and auth_session.expired:
+            raise HTTPException(
+                status_code=HTTP_302_FOUND,
+                headers={"Location": "/users/login"},
+            )
+
+        request.state.user = auth_session.user
+
         return await func(*args, **kwargs)
 
     return wrapper
@@ -36,12 +61,12 @@ async def create(user: UserCreate, session: SessionDep) -> User:
 
 
 @router.get("/login", response_class=HTMLResponse)
-def login_form(request: Request):
+async def login_form(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
 
 @router.post("/login", response_class=HTMLResponse)
-def login(
+async def login(
     *,
     request: Request,
     email: Annotated[str, Form()] = ...,
@@ -54,35 +79,41 @@ def login(
             "login.html",
             {"request": request, "error": "Invalid credentials"},
         )
-
+    auth_session = create_auth_session(AuthSessionCreate(user_id=user.id), session)
     request.session["user_id"] = user.id
-    return RedirectResponse("/users/home", status_code=HTTP_302_FOUND)
+    request.session["session_id"] = auth_session.id
+    request.state.user = user
+    response = RedirectResponse("/users/home", status_code=HTTP_302_FOUND)
+    return response
 
 
 @router.get("/home", response_class=HTMLResponse)
-def homepage(request: Request):
-    user_id = request.session.get("user_id")
+@login_required
+async def homepage(
+    request: Request,
+    session: SessionDep,  # noqa: ARG001
+):
     return templates.TemplateResponse(
         "home.html",
-        {"request": request, "user_id": user_id},
+        {"request": request, "user": request.state.user},
     )
 
 
 @router.get("/profile", response_class=HTMLResponse)
 @login_required
-async def profile(request: Request, session: SessionDep):
-    user_id = request.session.get("user_id")
-    user = get_user_by_id(user_id=user_id, session=session)
-    uer_profile = UserPublic(**user.model_dump())
-    # Here you would typically fetch the user details from the database
-    # For demonstration, we will just pass the user_id
+async def profile(
+    request: Request,
+    session: SessionDep,  # noqa: ARG001
+):
+    user = request.state.user
+    user_profile = UserPublic(**user.model_dump())
     return templates.TemplateResponse(
         "profile.html",
-        {"request": request, "user": uer_profile},
+        {"request": request, "user": user_profile},
     )
 
 
 @router.get("/logout", status_code=status.HTTP_302_FOUND)
 async def logout(request: Request):
     request.session.clear()
-    return RedirectResponse(url="/users/home", status_code=HTTP_302_FOUND)
+    return RedirectResponse(url="/users/login", status_code=HTTP_302_FOUND)

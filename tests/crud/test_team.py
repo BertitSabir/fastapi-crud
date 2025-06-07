@@ -1,14 +1,14 @@
 import pytest
-from src.models.team import Team, TeamCreate, TeamUpdate
 
 from src.crud.team import (
-    create_team,
-    get_teams,
-    get_team_by_id,
     TeamNotFoundError,
-    update_team,
+    create_team,
     delete_team,
+    get_team_by_id,
+    get_teams,
+    update_team,
 )
+from src.models.team import Team, TeamCreate, TeamUpdate
 
 
 def test_create_team(session):
@@ -26,7 +26,7 @@ def test_create_team(session):
     gotten.headquarters = team.headquarters
 
 
-def test_get_teams(session, team_avengers_is_here):
+def test_get_teams(session, team_avengers_is_here):  # noqa: ARG001
     # Act
     teams = get_teams(offset=0, limit=1, session=session)
 
@@ -35,7 +35,7 @@ def test_get_teams(session, team_avengers_is_here):
     assert isinstance(teams, list)
 
 
-def test_get_existing_team_by_id(session, team_avengers_is_here):
+def test_get_existing_team_by_id(session, team_avengers_is_here):  # noqa: ARG001
     # Arrange
     team_id = 1
 

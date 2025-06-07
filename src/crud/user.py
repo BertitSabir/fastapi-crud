@@ -8,6 +8,10 @@ class UserNotFoundError(Exception):
     """Exception raised when a specified user cannot be found."""
 
 
+class AuthSessionNotFoundError(Exception):
+    """Exception raised when a specified AuthSession cannot be found."""
+
+
 def create_user(user: UserCreate, session: Session) -> User:
     """
     Create a team in the database.

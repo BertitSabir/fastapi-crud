@@ -1,6 +1,6 @@
 from sqlmodel import Session
 
-from src.crud.user import get_user_by_email
+from src.crud.user import UserNotFoundError, get_user_by_email
 from src.models.user import User
 from src.security.utils import verify_password
 
@@ -10,7 +10,10 @@ def authenticate_user(
     plain_password: str,
     session: Session,
 ) -> User:
-    db_user = get_user_by_email(email=email, session=session)
+    try:
+        db_user = get_user_by_email(email=email, session=session)
+    except UserNotFoundError:
+        return False
     if not db_user:
         return False
     if not verify_password(

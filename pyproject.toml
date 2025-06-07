@@ -13,3 +13,8 @@ dependencies = [
     "pytest-cov>=6.1.1",
     "sqlmodel>=0.0.24",
 ]
+
+[dependency-groups]
+dev = [
+    "faker>=37.3.0",
+]
