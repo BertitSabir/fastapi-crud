@@ -1,6 +1,9 @@
 from typing import Annotated
-from sqlmodel import Session
+
 from fastapi import Depends
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from sqlmodel import Session
+
 from src.database import engine
 
 
@@ -13,3 +16,9 @@ def get_session():
 
 
 SessionDep = Annotated[Session, Depends(get_session)]
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/token")
+
+OAuth2PasswordBearerDep = Annotated[str, Depends(oauth2_scheme)]
+
+OAuth2PasswordRequestFormDep = Annotated[OAuth2PasswordRequestForm, Depends()]
