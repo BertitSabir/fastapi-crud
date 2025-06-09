@@ -90,3 +90,6 @@ Thumbs.db
 
 # Editor-based HTTP Client requests
 httpRequests/
+
+# env files
+.venv
