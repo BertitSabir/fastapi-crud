@@ -2,7 +2,7 @@ import logging
 from datetime import timedelta
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, Query, Security, status
 
 from src.config.settings import settings
 from src.crud.user import (
@@ -49,7 +49,7 @@ async def list_users(
     offset: Annotated[int, Query(ge=0)] = 0,
     limit: Annotated[int, Query(le=100)] = 100,
     session: SessionDep,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Security(get_current_user, scopes=["admin"])],
 ) -> list[User]:
     logger.info("current user: %s", current_user)
     return get_users(offset=offset, limit=limit, session=session)
@@ -73,7 +73,7 @@ async def login_for_access_token(
         )
     access_toke_expires = timedelta(minutes=settings.access_token_expire_minutes)
     jwt = create_access_token(
-        data={"sub": user.username},
+        data={"sub": user.username, "scopes": credentials.scopes},
         expires_delta=access_toke_expires,
     )
     return Token(access_token=jwt, token_type="bearer")  # noqa: S106

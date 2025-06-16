@@ -20,8 +20,9 @@ class Settings(BaseSettings):
     secret_key: str | None = None
     algorithm: str | None = None
     access_token_expire_minutes: int | None = None
+    admin_username: str
+    admin_password: str
 
-    # Pydantic settings configuration for environment file loading
     model_config = SettingsConfigDict(
         env_file=ENV_FILE_PATH,
         env_file_encoding="utf-8",

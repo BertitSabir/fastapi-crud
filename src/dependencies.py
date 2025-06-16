@@ -17,7 +17,14 @@ def get_session():
 
 SessionDep = Annotated[Session, Depends(get_session)]
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/token")
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl="/users/token",
+    scopes={
+        "user": "Access to users endpoints",
+        "admin": "Access to all endpoints",
+        "editor": "Can edit endpoints",
+    },
+)
 
 OAuth2PasswordBearerDep = Annotated[str, Depends(oauth2_scheme)]
 

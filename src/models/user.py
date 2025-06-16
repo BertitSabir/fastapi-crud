@@ -4,9 +4,10 @@ from sqlmodel import Field, SQLModel
 
 class UserBase(SQLModel):
     username: str = Field(unique=True)
-    full_name: str = Field(default=None, index=True)
-    email: EmailStr = Field(default=None, index=True)
-    active: bool = Field(default=True)
+    full_name: str | None = Field(default=None, index=True)
+    email: EmailStr | None = Field(default=None, index=True)
+    active: bool | None = Field(default=True)
+    is_admin: bool | None = Field(default=False)
 
 
 class User(UserBase, table=True):

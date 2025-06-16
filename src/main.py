@@ -1,9 +1,10 @@
 from fastapi import FastAPI
 
+from src.config.log_config import configure_logging
 from src.database import lifespan
 from src.routers import heroes, teams, users
 
-# Create FastAPI app:
+configure_logging()
 app = FastAPI(lifespan=lifespan)
 
 

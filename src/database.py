@@ -1,13 +1,17 @@
+# ruff: noqa: S106
+from collections.abc import Generator
 from contextlib import asynccontextmanager, contextmanager
-from typing import Generator
-
-from fastapi import FastAPI
-from sqlalchemy import create_engine, Engine
-from sqlmodel import Session, SQLModel, text
 from pathlib import Path
 
+from fastapi import FastAPI
+from sqlalchemy import Engine, create_engine
+from sqlmodel import Session, SQLModel, text
+
+from src.config.settings import settings
+from src.crud.user import create_user
 from src.models.hero import Hero
 from src.models.team import Team
+from src.models.user import UserCreate
 
 
 def init_db(session: Session):
@@ -16,6 +20,7 @@ def init_db(session: Session):
     hero_superman = Hero(name="Superman", secret_name="Clark Kent", age=30)
     hero_flash = Hero(name="Flash", secret_name="Barry Allen", age=28)
     hero_cyborg = Hero(name="Cyborg", secret_name="Victor Stone", age=25)
+
     # Teams
     teams = [
         Team(
@@ -29,6 +34,14 @@ def init_db(session: Session):
         session.add(team)
         session.commit()
 
+    # create admin user
+    user_create = UserCreate(
+        username=settings.admin_username,
+        password=settings.admin_password,
+        is_admin=True,
+    )
+    create_user(user=user_create, session=session)
+
 
 def get_database_url(name: str) -> str:
     """
@@ -39,6 +52,7 @@ def get_database_url(name: str) -> str:
 
     Returns:
         str: The SQLite database URL.
+
     """
     # check if a databse with this name exist in the current directory
     if Path(f"{name}.db").exists():
@@ -49,19 +63,21 @@ def get_database_url(name: str) -> str:
 
 
 def get_engine(db_url: str) -> Engine:
-    """Create and return a new SQLAlchemy engine using the provided database URL.
+    """
+    Create and return a new SQLAlchemy engine using the provided database URL.
 
     Args:
         db_url (str): The database URL to connect to.
 
     Returns:
         Engine: A SQLAlchemy Engine instance connected to the specified database.
+
     """
     return create_engine(url=db_url, echo=True)
 
 
 @contextmanager
-def get_session(engine: Engine) -> Generator[Session, None, None]:
+def get_session(engine: Engine) -> Generator[Session]:
     """
     Context manager that yields a new Session object bound to the provided engine.
 
@@ -70,6 +86,7 @@ def get_session(engine: Engine) -> Generator[Session, None, None]:
 
     Yields:
         Session: A SQLModel Session instance.
+
     """
     session = Session(engine)
     try:
@@ -86,11 +103,13 @@ def create_db_and_tables(engine: Engine, models=None):
         engine (Engine): The SQLAlchemy Engine instance to use for table creation.
         models (list, optional): List of SQLModel classes to create tables for.
                                If None, uses all registered models.
+
     """
     if models:
         # Create only the specified models
         SQLModel.metadata.create_all(
-            engine, tables=[model.__table__ for model in models]
+            engine,
+            tables=[model.__table__ for model in models],
         )
     else:
         # Create all models
@@ -105,7 +124,7 @@ engine = get_engine(db_url)
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI):  # noqa: ARG001
     create_db_and_tables(engine)
     init_db(Session(engine))
     yield
