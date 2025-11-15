@@ -1,5 +1,7 @@
+import os
 import pytest
 from sqlalchemy import create_engine
+from sqlalchemy.pool import StaticPool
 from sqlmodel import SQLModel, Session
 from starlette.testclient import TestClient
 
@@ -11,13 +13,18 @@ from src.main import app
 from src.models.hero import Hero
 from src.models.team import Team, TeamCreate
 
+# Set testing mode before importing database module
+os.environ["TESTING"] = "true"
+
 
 @pytest.fixture(name="session", scope="module")
 def session_fixture():
-    test_db_url = "testing.db"
-    # Create an in-memory SQLite database
+    # Create an in-memory SQLite database for tests
     engine = create_engine(
-        f"sqlite:///{test_db_url}", connect_args={"check_same_thread": False}
+        "sqlite:///:memory:",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+        echo=True
     )
     SQLModel.metadata.create_all(engine)
     with Session(engine) as session:
