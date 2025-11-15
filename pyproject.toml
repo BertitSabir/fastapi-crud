@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "fastapi[standard]>=0.115.12",
+    "psycopg[binary]>=3.2.3",
     "pytest>=8.3.5",
     "pytest-asyncio==1.0.0",
     "pytest-cov>=6.1.1",

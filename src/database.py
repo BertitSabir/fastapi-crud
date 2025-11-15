@@ -1,10 +1,10 @@
+import os
 from contextlib import asynccontextmanager, contextmanager
 from typing import Generator
 
 from fastapi import FastAPI
-from sqlalchemy import create_engine, Engine
-from sqlmodel import Session, SQLModel, text
-from pathlib import Path
+from sqlalchemy import Engine, create_engine
+from sqlmodel import Session, SQLModel
 
 from src.models.hero import Hero
 from src.models.team import Team
@@ -30,22 +30,27 @@ def init_db(session: Session):
         session.commit()
 
 
-def get_database_url(name: str) -> str:
+def get_database_url() -> str:
     """
-    Generate an SQLite database URL string for the given database name.
-
-    Args:
-        name (str): The name of the database.
+    Generate database URL from environment variables.
+    Uses SQLite for testing, PostgreSQL for production.
 
     Returns:
-        str: The SQLite database URL.
+        str: The database URL.
     """
-    # check if a databse with this name exist in the current directory
-    if Path(f"{name}.db").exists():
-        print(f"Database {name}.db already exists. Deleting it.")
-        Path(f"{name}.db").unlink()
-    # return the SQLite database URL
-    return f"sqlite:///{name}.db"
+    # Check if we're in test mode
+    if os.getenv("TESTING", "false").lower() == "true":
+        return "sqlite:///./test.db"
+
+    # Get database configuration from environment variables for PostgreSQL
+    db_user = os.getenv("POSTGRES_USER", "fastapi")
+    db_password = os.getenv("POSTGRES_PASSWORD", "fastapi")
+    db_host = os.getenv("POSTGRES_HOST", "localhost")
+    db_port = os.getenv("POSTGRES_PORT", "5432")
+    db_name = os.getenv("POSTGRES_DB", "fastapi_crud")
+
+    # Return PostgreSQL database URL
+    return f"postgresql+psycopg://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
 
 
 def get_engine(db_url: str) -> Engine:
@@ -57,7 +62,9 @@ def get_engine(db_url: str) -> Engine:
     Returns:
         Engine: A SQLAlchemy Engine instance connected to the specified database.
     """
-    return create_engine(url=db_url, echo=True)
+    # Add connect_args for SQLite to handle threading
+    connect_args = {"check_same_thread": False} if db_url.startswith("sqlite") else {}
+    return create_engine(url=db_url, echo=True, connect_args=connect_args)
 
 
 @contextmanager
@@ -96,11 +103,8 @@ def create_db_and_tables(engine: Engine, models=None):
         # Create all models
         SQLModel.metadata.create_all(engine)
 
-    with engine.connect() as connection:
-        connection.execute(text("PRAGMA foreign_keys=ON"))
 
-
-db_url = get_database_url(name="crud")
+db_url = get_database_url()
 engine = get_engine(db_url)
 
 
